@@ -1,8 +1,8 @@
 ---
     title: "Pancreatic Cancer Analysis"
     author: "Bravo, Williams, and Acharjee"
-    date: "18 Sept 2018"
-    output: html_document
+    date: "19 Sept 2018"
+    output: pdf_document
 ---
     ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -21,9 +21,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ##### Begin Block 1
 
-## John fix
 setwd("~/AnimeshReview/LauraPaper/Journal of Translational Medicine /LauraFinal/")
-#load("finalcommentsplotsandall.RData")
 library(readxl)
 library(data.table)
 library(tidyverse)
@@ -325,46 +323,9 @@ singleROCfun <- function(xtrain, ytrain,xtest,ytest,s) {
 
 
 
-#### End Load Laura's Functions, edit with seeds for SVM and RF cuz random
 
 
 set.seed(132) 
-
-
-
-#LASSO ####
-#setwd("../R code /")
-# Hazeldine_1h <- read_csv("CF_ISS1.csv")
-# savee<-as.factor(Hazeldine_1h$Label)
-# names(Hazeldine_1h)<-sapply(1:dim(Hazeldine_1h)[2], function(i){paste0("First ",names(Hazeldine_1h)[i])})
-# Hazeldine_1h<-Hazeldine_1h[,-(1:3)]
-# Hazeldine_1h<-Hazeldine_1h[,-(77:78)]
-# 
-# Hazeldine_2h <- read_csv("CF_ISS2.csv")
-# names(Hazeldine_2h)<-sapply(1:dim(Hazeldine_2h)[2], function(i){paste0("Second ",names(Hazeldine_2h)[i])})
-# Hazeldine_2h<-Hazeldine_2h[,-(1:3)]
-# Hazeldine_2h<-Hazeldine_2h[,-(79:80)]
-# 
-# Hazeldine_3h <- read_csv("CF_ISS3.csv")
-# Hazeldine_3h<-Hazeldine_3h[,-(1:3)]
-# names(Hazeldine_3h)<-sapply(1:dim(Hazeldine_3h)[2], function(i){paste0("Third ",names(Hazeldine_3h)[i])})
-# 
-# 
-# #The features from all three data points are merged together, as same name, add descriptor to identify each time point.
-# #Label accounts for the MODS development
-# All2<-data.frame(Hazeldine_1h,Hazeldine_2h,Hazeldine_3h,Label=savee)
-# 
-# 
-# saveRDS(All2,"All2.Laura.rds")
-# saveRDS(savee,"savee.Laura.rds")
-
-### Load Laura's Data
-#setwd("/Users/j.williams/AnimeshReview/LauraPaper/Journal of Translational Medicine /LauraFinal/Sept18_LauraRes")
-#All2 <- readRDS("All2.Laura.rds"); savee <- readRDS("savee.Laura.rds")
-
-### Load AML Data
-#setwd("/Users/j.williams/AnimeshReview/LauraPaper/Journal of Translational Medicine /LauraFinal/Sept18_AMLRes")
-#All2 <- readRDS("All2.AML.rds"); savee <- readRDS("savee.AML.rds")
 
 
 ### Load Pancreatic Cancer Dta
@@ -411,7 +372,6 @@ for (i in 1:n){
 
   smp_size = floor(0.75 * nrow(All2))
   
-  #train_ind = sample(seq_len(nrow(All2)), size = smp_size)
   train_ind <- caret::createDataPartition(All2$Label, p = 0.75, list = FALSE, times = 1)
   
   #Training set
@@ -421,13 +381,9 @@ for (i in 1:n){
   test = All2[-train_ind, ]
   
   #Creates matrices for independent and dependent variables.
-  ## try something like 
- ####### xtrain <- train[ , !(names(train) %in% "Label")]
   xtrain <- train[ , !(names(train) %in% "Label")] %>% as.matrix()
-  #xtrain = model.matrix(Label~. -1, data = train)
   ytrain = train$Label
   xtest <- test[ , !(names(test) %in% "Label")] %>% as.matrix()
-  #xtest = model.matrix(Label~. -1, data = test)
   ytest = test$Label
   
   
@@ -583,8 +539,6 @@ cont2<-0
 
 for (p in 1:N){ #N different measurements of AUC values, mean done at the end. 
   smp_size<-floor(0.65 * nrow(Betas_select))
-  #set.seed(907)
- # train_ind<-sample(seq_len(nrow(Betas_select)), size = smp_size)
   train_ind <- caret::createDataPartition(All2$Label, p = 0.65, list = FALSE, times = 1)
   
   # Training set
@@ -597,9 +551,7 @@ for (p in 1:N){ #N different measurements of AUC values, mean done at the end.
 
   xtest <- test[ , !(names(test) %in% "Label")] %>% as.matrix()
 
-#  xtrain<-model.matrix(Label~. -1, data = train)
   ytrain<-train$Label
- # xtest<-model.matrix(Label~. -1, data = test)
   ytest<-test$Label
   
   xtest<-data.frame(xtest)
@@ -678,21 +630,6 @@ Betas_select2<-as.data.frame(Betas_select2)
 
 
 NumVar<-length(Betas_select2)
-#ISSs<-c("Third.NISS","Third.ISS")
-#We would obtain ISS or NISS as important features, never together as they are highly correlated. Have to know in which position of the new selected features it is found given we perfome a bivariate model with it and added feature.
-
-#where<-match(colnames(Betas_select2),ISSs)
-#for (u in 1:dim(Betas_select2)[2]){
-#  if (!(is.na(where[u]))){
-#    if (where[u]==1){
-#      CompareISS<-u
-#      NISShere<-1
-#    }else{
-#      CompareISS<-u
-#      NISShere<-0
-#    }
-#  }
-#}
 
 
 N<-1000 #number of models produced  (both permuted (random) and real) - for all univariate (Each feature), bivariate and multivariate. 
@@ -749,8 +686,6 @@ MatdoublePlusR<-matrix(as.list(rnorm(2)),(NumVar-1),N)
 
 for (j in 1:N){ #N different measurements of AUC values, mean done at the end. 
   smp_size<-floor(0.65 * nrow(Betas_select2))
-  #set.seed(907)
-  #train_ind<-sample(seq_len(nrow(Betas_select2)), size = smp_size)
   train_ind <- caret::createDataPartition(All2$Label, p = 0.65, list = FALSE, times = 1)
   
   # Training set
@@ -763,9 +698,7 @@ for (j in 1:N){ #N different measurements of AUC values, mean done at the end.
   
   xtest <- test[ , !(names(test) %in% "Label")] %>% as.matrix()
   
- # xtrain<-model.matrix(Label~. -1, data = train)
   ytrain<-train$Label
- # xtest<-model.matrix(Label~. -1, data = test)
   ytest<-test$Label
   
   xtest<-data.frame(xtest)
@@ -805,28 +738,7 @@ for (j in 1:N){ #N different measurements of AUC values, mean done at the end.
   MatsingleROC[,j]<-matrix(singleROC)
   
   
-  # 
-  # for (s in (1:(NumVar-1))){
-  #     cat(s)
-  #   s<-as.numeric(s)
-  #   k<-CompareISS
-  #   doubleAUC[s,j]<-doubleAUCfun(xtrain, ytrain,xtest,ytest,s,k) 
-  #   doubleROC[[s]]<-doubleROCfun(xtrain, ytrain,xtest,ytest,s,k) 
-  #   MatdoublePlus[s,j]<-doublePlusfun(xtrain, ytrain,xtest,ytest,s,k) 
-  #   doubleAUCSVM[s,j]<-doubleAUCfunSVM(xtrain, ytrain,xtest,ytest,s,k) 
-  #   doubleAUCSVMCross[s,j]<-doubleAUCfunSVMCross(xtrain, ytrain,xtest,ytest,s,k) 
-  #   doubleAUCNB[s,j]<-doubleAUCfunNB(xtrain, ytrain,xtest,ytest,s,k) 
-  #   doubleAUCRFCross[s,j]<-doubleAUCfunRFCross(xtrain, ytrain,xtest,ytest,s,k)
-  #   
-  # }
-  # 
-  # 
-  # MatdoubleROC[,j]<-matrix(doubleROC)
-  # 
-  # 
-  #Null Hypothesis #### 
- 
-  
+
   
   
   # Training set
@@ -837,14 +749,11 @@ for (j in 1:N){ #N different measurements of AUC values, mean done at the end.
   
   # Test set
   
-  ### John Check dim(train) here
   xtrain <- train[ , !(names(train) %in% "Label")] %>% as.matrix()
   
   xtest <- test[ , !(names(test) %in% "Label")] %>% as.matrix()
   
-#  xtrain<-model.matrix(Label~. -1, data = train)
   ytrain<-train$Label
-#  xtest<-model.matrix(Label~. -1, data = test)
   ytest<-test$Label
   
   xtest<-data.frame(xtest)
@@ -862,8 +771,7 @@ for (j in 1:N){ #N different measurements of AUC values, mean done at the end.
   
   
   
- # source('AUCFun29-3.R')
-  
+
   multipleAUCNBR[1,j]<-multipleAUCfunNB(xtrain, ytrain,xtest,ytest)
   multipleAUCR[1,j]<-multipleAUCfun(xtrain, ytrain,xtest,ytest)
   
@@ -881,23 +789,6 @@ for (j in 1:N){ #N different measurements of AUC values, mean done at the end.
   
   
   # 
-  # for (s in (1:(NumVar-1))){
-  #   s<-as.numeric(s)
-  #   k<-CompareISS
-  #   doubleAUCR[s,j]<-doubleAUCfun(xtrain, ytrain,xtest,ytest,s,k) 
-  #   doubleROCR[[s]]<-doubleROCfun(xtrain, ytrain,xtest,ytest,s,k) 
-  #   MatdoublePlusR[s,j]<-doublePlusfun(xtrain, ytrain,xtest,ytest,s,k) 
-  #   doubleAUCSVMR[s,j]<-doubleAUCfunSVM(xtrain, ytrain,xtest,ytest,s,k) 
-  #   doubleAUCSVMCrossR[s,j]<-doubleAUCfunSVMCross(xtrain, ytrain,xtest,ytest,s,k) 
-  #   doubleAUCNBR[s,j]<-doubleAUCfunNB(xtrain, ytrain,xtest,ytest,s,k) 
-  #   doubleAUCRFCrossR[s,j]<-doubleAUCfunRFCross(xtrain, ytrain,xtest,ytest,s,k)
-  #   
-  # }
-  # 
-  # 
-  # MatdoubleROCR[,j]<-matrix(doubleROCR)
-  # 
-  # 
 }
 
 ##### End Block 5
@@ -906,11 +797,9 @@ for (j in 1:N){ #N different measurements of AUC values, mean done at the end.
 
 ##### Begin Block 6
 
-#if (NISShere==1){
-#  names2<-sapply(1:(NumVar-1), function(i){paste0("ISS/",names(xtrain)[i])})
-#}else{
+
   names2<-sapply(1:(NumVar-1), function(i){paste0("NISS/",names(xtrain)[i])})
-#}
+
 
 trial<-NULL
 
@@ -921,17 +810,10 @@ for (b in (2:NumVar-1)) {
   h=h+1
 }
 
-# doubleAUC<-as.data.frame(doubleAUC)
-# doubleAUC<-mutate(doubleAUC, Means=rowMeans(doubleAUC))
-# row.names(doubleAUC)<-trial
 
 singleAUC<-as.data.frame(singleAUC)
 singleAUC<-mutate(singleAUC, Means=rowMeans(singleAUC))
 row.names(singleAUC)<-names(xtrain)
-
-# doubleAUCR<-as.data.frame(doubleAUCR)
-# doubleAUCR<-mutate(doubleAUCR, Means=rowMeans(doubleAUCR))
-# row.names(doubleAUCR)<-trial
 
 singleAUCR<-as.data.frame(singleAUCR)
 singleAUCR<-mutate(singleAUCR, Means=rowMeans(singleAUCR))
@@ -964,17 +846,6 @@ for (g in 1:(NumVar-1)){
 }
 
 
-#grid.arrange(plot3[[l]], arrangeGrob(plot4[[l]],plot[[l]], ncol=2), ncol=1)
-
-# for (t in 1:(NumVar-1)){
-#   cat("\n")
-#     cat(t)
-#   plot(MatdoubleROC[[t,1]],lwd=3,main=paste("ROC curve of", trial[t]))
-#   for (b in 1:N){
-#     plot(MatdoubleROCR[[t,b]],col=b,lty=3,add=TRUE)
-#   }
-#   
-# }
 
 
 plot(multipleROC[[1]],lwd=3,main=paste("ROC curve of", trial[1]))
@@ -983,31 +854,6 @@ for (b in 1:N){
 }
 
 
-
-#
-# #P value of systematic analysis
-#
-# max1<-(c(rep(0,(NumVar-1))))
-# max2<-(c(rep(0,(NumVar-1)*2)))
-# 
-# for(f in 1:(NumVar-1)){
-#   for (h in 1:N){
-#     if (singleAUCR[f,h]>singleAUC$Means[f]){
-#       max1[f]<-max1[f]+1
-#     }
-#   }
-# }
-# 
-# for(f in (NumVar-1)){
-#   for (h in N){
-#     if (doubleAUCR[f,h]>doubleAUC$Means[f]){
-#       max2[f]<-max2[f]+1
-#     }
-#   }
-# }
-#
-#
-#
 
 AUCT<-as.data.frame(t(singleAUC[1:dim(singleAUC)[2]-1]))
 AUC2T<-as.data.frame(t(singleAUCR[1:dim(singleAUCR)[2]-1]))
@@ -1024,29 +870,7 @@ for (j in 1:(NumVar-1)){
   Mono<-rbind(Mono,Mono1)
   print(ggdensity(Mono, x = "Mono", fill = "Label", palette = "jco")+geom_vline(xintercept =Mean[j,],linetype = 2,color="black",show.legend = TRUE)+labs(title= paste("Permuted versus real model, density plot of AUC curve of",nm[j]),y=paste("Density",nm[j]),x="AUC values")+geom_text(aes(x=as.numeric(Mean[j,1]),y=-0.25),label=signif(Mean[j,1], digits = 2))+geom_text(aes(x=as.numeric(Mean[j,2]),y=-0.25),label=signif(Mean[j,2], digits = 2)))
 }
-# 
-# AUCTd<-as.data.frame(t(doubleAUC[1:dim(doubleAUC)[2]-1]))
-# AUC2Td<-as.data.frame(t(doubleAUCR[1:dim(doubleAUCR)[2]-1]))
-# three<-as.data.frame(doubleAUC$Means)
-# four<-as.data.frame(doubleAUCR$Means)
-# Meand<-data.frame(three,four)
-# Meand<-as.matrix(Meand)
-# nmd<-names(AUCTd)
-# #
-# #
-# for (j in 1:(NumVar-1)){
-#     cat("\n")
-#     cat(j)
-#   Monod<-data.frame(Monod=AUCTd[,j],Label=as.factor(c(rep("model",dim(AUCTd)[1]))))
-#   Mono1d<-data.frame(Monod=AUC2Td[,j],Label=as.factor(c(rep("permuted data",dim(AUC2Td)[1]))))
-#   Monod<-rbind(Monod,Mono1d)
-#   print(ggdensity(Monod, x = "Monod", fill = "Label", palette = "jco")+geom_vline(xintercept=Meand[j,],linetype = 2,color="black",show.legend = TRUE)+labs(title= paste("Permuted versus real model, density plot of AUC curve of",nmd[j]),y=paste("Density",nmd[j]),x="AUC values")+geom_text(aes(x=as.numeric(Meand[j,1]),y=-0.25),label=signif(Meand[j,1], digits = 2))+geom_text(aes(x=as.numeric(Meand[j,2]),y=-0.25),label=signif(Meand[j,2], digits = 2)))
-# }
-# #
 n <- length(plot)
-#  nCol <- floor(sqrt(n))
-# # do.call("grid.arrange", grobs=c(plots, ncol=nCol))
-# # grid.arrange(grobs = plot, ncol = 2)
 
 # ###Accuracy, Precision etc
 #
@@ -1078,7 +902,6 @@ for (s in 1:(NumVar-1)){
     Means<-data.frame(Mean=mean(MonoLab$Mono),MeanR=mean(MonoLabR$Mono))
     Mono<-rbind(MonoLab,MonoLabR)
     plot3[[d]]<-ggdensity(Mono, x = "Mono", fill = "Label", palette = "jco")+labs(title= paste("Value : ",Data[d], "for", names(xtrain)[s]),x=paste(names(xtrain)[s]))
-    #+geom_vline(xintercept=Means[1,],linetype = 2,color="black",show.legend = TRUE)+geom_text(aes(x=as.numeric(Means[1,1]),y=-0.25),label=signif(Means[1,1], digits = 2))+geom_text(aes(x=as.numeric(Means[1,2]),y=-0.25,color="blue"),label=signif(Means[1,2], digits = 2))
     Mono<-NULL
     MonoR<-NULL
     
@@ -1086,31 +909,6 @@ for (s in 1:(NumVar-1)){
   print(grid.arrange(plot3[[2]], plot3[[3]],plot3[[4]],plot3[[1]], ncol=2))
   
 }
-#plot3<-ggdensity(Mono, x = "Mono", fill = "Label", palette = "jco")+labs(title= paste("Value studied single: ",Data[d], "for", names(xtrain)[s]))
-# 
-# Mono<-NULL
-# MonoR<-NULL
-# for (s in 1:(NumVar-1)){
-#   for (d in 1:4){
-#     for (j in 1:N){
-#       Mono1<-data.frame(Mono=MatdoublePlus[s,j][[1]][[d]])
-#       Mono<-rbind(Mono,Mono1)
-#       Mono1R<-data.frame(MonoR=MatdoublePlusR[s,j][[1]][[d]])
-#       MonoR<-rbind(MonoR,Mono1R)
-#       
-#     }
-#     MonoLab<-data.frame(Mono=Mono,Label=as.factor(c(rep("model",dim(Mono)[1]))))
-#     MonoLabR<-data.frame(Mono=MonoR,Label=as.factor(c(rep("permuted data",dim(MonoR)[1]))))
-#     colnames(MonoLabR)[1]<-c("Mono")
-#     Mono<-rbind(MonoLab,MonoLabR)
-#     plot4[[d]]<-ggdensity(Mono, x = "Mono", fill = "Label", palette = "jco")+labs(title= paste("Value : ",Data[d], "for", trial[s]),x=paste(trial[s]))
-#     Mono<-NULL
-#     MonoR<-NULL
-#   }
-#   print(grid.arrange(plot4[[2]], plot4[[3]],plot4[[4]],plot4[[1]], ncol=2))
-#   
-# }
-# 
 
 Meanq<-data.frame(multipleAUC$Means,multipleAUCR$Means)
 MA<-data.frame(Mono=t(multipleAUC[1:dim(multipleAUC)[2]-1]))
@@ -1131,29 +929,12 @@ pp<-ggdensity(Mono, x = "Mono", fill = "Label", palette = "jco")+geom_vline(xint
 print(pp+geom_vline(xintercept=Meanq[1,2],linetype = 2,color="black",show.legend = TRUE))
 
 ee<-regex(names,".")
-# NamesModels<-c("doubleAUCNB","doubleAUCNBR","doubleAUCRFCross","doubleAUCRFCrossR","doubleAUCSVM","doubleAUCSVMR","doubleAUCSVMCross","doubleAUCSVMCrossR")
-# q<-list(doubleAUCNB,doubleAUCNBR,doubleAUCRFCross,doubleAUCRFCrossR,doubleAUCSVM,doubleAUCSVMR,doubleAUCSVMCross,doubleAUCSVMCrossR)
-# s<-lapply(q,function(i){MeansNames(i,trial)})
-# Models<-data.frame(s[[1]][,dim(doubleAUCNB)[2]])
-# for (h in 1:length(s)){
-#   Models[,h]<-data.frame(s[[h]][,dim(doubleAUCNB)[2]])
-# }
-# row.names(Models)<-trial
-# names(Models)<-NamesModels
 
 Final<-data.frame(MultiNB=t(multipleAUCNB),MultiNBRand=t(multipleAUCNBR),Multi=t(multipleAUC),MultiRand=t(multipleAUCR) )
 FinalMeans<-data.frame(MultiNB=multipleAUCNB$Means,MultiNBRand=multipleAUCNBR$Means,Multi=multipleAUC$Means,MultiRand=multipleAUCR$Means )
 
 ##### End Block 7
 
-### John code to print Laura's functions
-#sink("LauraFunctions.R")
-#for (jk in seq_along(lsf.str())) {
-#    myFun <- lsf.str()[jk]
-#    cat(paste(myFun," <- ",sep = ""))
-#    print(getAnywhere(myFun)[1])
-#}
-#sink()
 
 genes_to_network <- colnames(Betas_select)[-length(colnames(Betas_select))]
 genes_to_networkStrict <- colnames(Betas_select2)[-length(colnames(Betas_select2))]
