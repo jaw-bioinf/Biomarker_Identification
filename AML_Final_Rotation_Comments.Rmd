@@ -322,17 +322,77 @@ singleROCfun <- function(xtrain, ytrain,xtest,ytest,s) {
 
 
 
+### Optional Data PreProcessing Module
+preProcessHgU133PlusMicroarray <- function(microDat = NULL, annoGenes = NULL, myDesign = NULL) {
+    annoGenes$Gene.stable.ID <- NULL
+    annoGenes <- annoGenes %>% unique()
+    annoGenes <- annoGenes[complete.cases(annoGenes),]
+    annoGenes <- annoGenes[annoGenes$AFFY.HG.U133.Plus.2.probe %in% rownames(microDat),]
+    myProbes <- data.frame(rownames(microDat),rownames(microDat))
+    colnames(myProbes) <- c("Probe","Gene")
+    myProbes <- dplyr::left_join(myProbes,annoGenes, by = c("Probe" = "AFFY.HG.U133.Plus.2.probe")) 
+    myProbes$Gene <- NULL
+    myProbes <- myProbes %>% unique()
+    origNames <- rownames(microDat)
+    newNames <- make.unique(origNames)
+    rownames(microDat) <- newNames
+    myProbes <- myProbes[!duplicated(myProbes$Probe),]
+    DeDuplicatedProbes <- WGCNA::collapseRows(microDat, rowGroup = myProbes$Gene.name,rowID = newNames, method = "MaxMean")
+    
+    newDat <- DeDuplicatedProbes$datETcollapsed
+    All2 <- as.data.frame(t(newDat))
+    All2$Label <- as.factor(myDesign$Condition)
+    savee <- as.factor(All2$Label)
+    ### N will be normal, Y will be case
+    All2$savee <-  ifelse(All2$Label == "normal","N","Y")
+    All2$Label <- as.factor(All2$savee)
+    All2$savee <- NULL
+    WGCNA::collectGarbage()
+    return(All2)
+}
+
+### optional GenericPreProcess function to filter out missing data and 
+GenericPreProcess <- function(UnProcessedData = NULL) {
+    outcome <- UnProcessedData$Label
+    UnProcessedData$Label <- NULL
+    # remove columns (eventual features) with > 50 % missing
+    UnProcessedData <- UnProcessedData[,-which(colMeans(is.na(UnProcessedData)) > 0.5) ]
+    myPreProDat <- caret::preProcess(x = UnProcessedData, method = c("medianImpute","YeoJohnson","nzv"))
+    All2 <- predict(myPreProDat,UnProcessedData)
+    All2$Label <- as.factor(outcome)
+    savee <- as.factor(All2$Label)
+    ### N will be normal, Y will be case
+    All2$savee <-  ifelse(All2$Label == "normal","N","Y")
+    All2$Label <- as.factor(All2$savee)
+    All2$savee <- NULL
+    WGCNA::collectGarbage()
+    return(All2)
+}
 
 
 
+### if preProcessing Generic data, load UnProcessed Data and run by uncommenting this line:
+        #All2 <- GenericPreProcess(UnProcessedData = UnProcessedData)
+
+### if further processing microarry data perviously normalized to the probe level and using HgU133 Plus microarrays, run with your own microDat gene matrix and design matrix myDesign by uncommenting this line:
+
+        #All2 <- preProcessHgU133PlusMicroarray <- function(microDat = microDat, annoGenes = readRDS("annoGenes.rds"), myDesign = myDesign) 
+
+### if further processing microarry data perviously normalized to the probe level and using other microarrays, run as above with annoGenes as your own annotation set by uncommenting this line:
+    
+       # All2 <- preProcessHgU133PlusMicroarray <- function(microDat = microDat, annoGenes = annoGenes, myDesign = myDesign) 
+
+    
+    
+    
+    
 set.seed(132) 
 
 
 
-### Load AML Data
+### Load AML Data, already preprocessed
 setwd("/Users/j.williams/AnimeshReview/LauraPaper/Journal of Translational Medicine /LauraFinal/Sept18_AMLRes")
 All2 <- readRDS("All2.AML.rds"); savee <- readRDS("savee.AML.rds")
-
 
 
 
